@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAI Library</title>
+    <style type="text/css">
+        /* Themes */
+        :root {
+            --body-bg: #f5f8fa;
+            --border-color: #efefef;
+            --messagebox-bg: #ffffff;
+            --messagebox-bg-transparent: rgba(255, 255, 255, 0.6);
+            --messagebox-shadow: rgba(0, 0, 0, 0.1);
+            --font-color: #1f1f1f;
+            --rgba-1: rgba(0, 0, 0, 0.05);
+            --rgba-2: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark_mode {
+            --body-bg: #18181b;
+            --border-color: #4f4f4f;
+            --messagebox-bg: #26272b;
+            --messagebox-bg-transparent: rgba(38, 39, 43, 0.8);
+            --messagebox-shadow: rgba(0, 0, 0, 0);
+            --font-color: #ededed;
+            --rgba-1: rgba(255, 255, 255, 0.06);
+            --rgba-2: rgba(255, 255, 255, 0.2);
+        }
+
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+        button,
+        select,
+        img {
+            user-select: none;
+        }
+
+        ol,
+        ul,
+        li,
+        a,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p {
+            text-decoration: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .italic {
+            font-style: italic;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .bold-italic {
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        html {
+            font-size: 14px;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+            background-color: var(--body-bg);
+            color: var(--font-color);
+            transition: all 0.5s ease-in-out 0s;
+        }
+
+        .content-cont {
+            display: flex;
+            flex-direction: row;
+        }
+
+
+        /* NAV / Drawer */
+
+        @keyframes slideIn {
+            0% {
+                opacity: 0;
+                left: -200px;
+            }
+
+            100% {
+                opacity: 1;
+                left: 0;
+            }
+        }
+
+        .drawer-cont.active {
+            display: block;
+        }
+
+        .drawer-cont {
+            display: none;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+        }
+
+        nav {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            max-width: 80%;
+            background-color: var(--body-bg);
+
+            display: flex;
+            flex-direction: column;
+            padding: 10px 0;
+            overflow: hidden;
+            animation: slideIn 0.2s ease-in-out;
+            -webkit-box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+            -moz-box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+            box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-header {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 0 10px 0 20px;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .close_drawer-btn {
+            align-self: flex-end;
+            padding: 10px;
+            transition: background-color 0.1s ease-in-out;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .close_drawer-btn:hover {
+            background-color: var(--rgba-1);
+        }
+
+        .close_drawer-btn svg {
+            display: flex;
+            width: 30px;
+            height: 30px;
+            color: var(--font-color);
+        }
+
+        /*.nav-new_char-btn {
+            align-self: flex-start;
+            outline: none;
+            border: none;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            background-color: #4e9733;
+            transition: background-color 0.1s ease-in-out;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .nav-new_char-btn:hover {
+            background-color: #6ba755;
+        }*/
+
+        .history_list-header {
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            margin-bottom: 10px;
+        }
+
+        .history_list {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .history_item {
+            transition: background-color 0.1s ease-in-out;
+            padding: 20px 30px 20px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--rgba-2);
+        }
+
+        .history_item:first-child {
+            border-top: 1px solid var(--rgba-2);
+        }
+
+        .history_item:hover {
+            background-color: var(--rgba-1);
+        }
+
+        .history_item p {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .history_item p .chat-date {
+            font-style: italic;
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+        }
+
+        /*nav .char-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.1s ease-in-out;
+            padding: 10px 40px 10px 20px;
+            cursor: pointer;
+        }
+
+        nav .char-item:hover {
+            background-color: var(--rgba-1);
+        }
+
+        nav .nav-avatar-wrap {
+            width: 40px;
+            height: 40px;
+        }
+
+        nav .nav-avatar-wrap img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        nav .char-item span {
+            font-size: 1.3rem;
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        }*/
+
+        /* MAIN */
+        main {
+            display: flex;
+            flex-direction: column;
+            padding: 0 4%;
+            width: 100%;
+        }
+
+        /* HEADER */
+        header {
+            padding: 6px 6px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .open_drawer-wrap svg {
+            display: flex;
+            width: 46px;
+            height: 46px;
+            color: var(--font-color);
+        }
+
+
+        .theme_switch {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .theme_switch span {
+            font-size: 1.1rem;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .change-bg-wrap {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .change-bg {
+            outline: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--font-color);
+            background-color: var(--body-bg);
+            padding: 4px 5px;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .change-bg-wrap .delete-bg {
+            color: var(--font-color);
+            cursor: pointer;
+            display: flex;
+        }
+
+        .change-bg-wrap .delete-bg:hover {
+            color: #e20909;
+        }
+
+        .dark-mode-span {
+            display: none;
+        }
+
+        .tswitch_box[type=checkbox] {
+            height: 0;
+            width: 0;
+            visibility: hidden;
+            position: absolute;
+        }
+
+        .tswitch_label {
+            cursor: pointer;
+            text-indent: -9999px;
+            width: 60px;
+            height: 30px;
+            display: block;
+            border-radius: 15px;
+            position: relative;
+            border: 1px solid #323232;
+            background: #f5f8fa;
+        }
+
+        .tswitch_label:after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50px;
+            transition: 0.2s;
+            background: #323232;
+        }
+
+        .tswitch_box:checked+label {
+            background: #323232;
+            border: 1px solid #f5f8fa;
+        }
+
+        .tswitch_box:checked+label:after {
+            left: calc(100% - 5px);
+            transform: translateX(-100%);
+            background: #f5f8fa;
+        }
+
+        .tswitch_label:active:after {
+            width: 25px;
+        }
+
+        /*.update_current_char-btn {
+            margin-left: auto;
+            outline: none;
+            border: none;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            align-self: center;
+            cursor: pointer;
+            background-color: #336c97;
+            transition: background-color 0.1s ease-in-out;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .update_current_char-btn:hover {
+            background-color: #5f829d;
+        }*/
+
+        body.custom-bg {
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: 50% 50%;
+            background-attachment: fixed;
+        }
+
+        body.custom-bg .chat .chat_content-wrap {
+            background-color: var(--messagebox-bg-transparent) !important;
+        }
+
+
+        /* CONVERSATION */
+        .character_name-cont {
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .character_name-cont h3 {
+            font-size: 1.3rem;
+            font-weight: 400;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+
+        .chat {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-self: center;
+            padding-bottom: 30px;
+        }
+
+        .chat_message-item {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .chat .avatar-wrap {
+            flex-shrink: 0;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .chat .avatar-wrap>* {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .chat .avatar-wrap .no_avatar-user {
+            background-color: #5157cf;
+        }
+
+        .chat .avatar-wrap .no_avatar-char {
+            background-color: #e20909;
+        }
+
+        .chat .chat_content-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px var(--messagebox-shadow);
+            background-color: var(--messagebox-bg);
+            overflow: hidden;
+        }
+
+        .chat .chat_content-wrap h5 {
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .chat .chat_content-wrap .message-wrap {
+            font-size: 1rem;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+
+        @media (min-width: 576px) {}
+
+        @media (min-width: 768px) {
+            html {
+                font-size: 16px;
+            }
+
+            nav {
+                min-width: 40%;
+            }
+
+            header {
+                padding: 14px 20px;
+            }
+
+            .dark-mode-span {
+                display: block;
+            }
+
+            .open_drawer-wrap {
+                padding: 4px;
+                cursor: pointer;
+                border-radius: 6px;
+                transition: background-color 0.1s ease-in-out;
+            }
+
+            .open_drawer-wrap:hover {
+                background-color: var(--rgba-1);
+            }
+
+            .chat {
+                width: 80%;
+            }
+
+            .chat .chat_content-wrap {
+                padding: 14px;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .chat {
+                width: 70%;
+            }
+        }
+
+        @media (min-width: 1200px) {}
+
+        @media (min-width: 1400px) {}
+    </style>
+</head>
+
+<body>
+    <template id="message_item_template">
+        <div class="chat_message-item">
+            <div class="avatar-wrap">
+
+            </div>
+            <div class="chat_content-wrap">
+                <h5>
+
+                </h5>
+                <div class="message-wrap">
+                    <p>
+
+                    </p>
+                </div>
+            </div>
+        </div>
+    </template>
+    <div class="content-cont">
+        <div class="drawer-cont">
+            <nav>
+                <div class="nav-header">
+                    <div class="close_drawer-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-x-lg" viewBox="0 0 16 16">
+                            <path
+                                d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="history_list-header">
+                    <span>History</span>
+                </div>
+                <div class="history_list" id="history_list">
+
+                </div>
+            </nav>
+        </div>
+        <main>
+            <header>
+                <div class="open_drawer-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-list" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z" />
+                    </svg>
+                </div>
+
+                <div class="theme_switch">
+                    <div class="change-bg-wrap">
+                        <input type="file" id="bgInput" accept="image/*" hidden />
+                        <button type="button" class="change-bg">BG</button>
+                        <span class="delete-bg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                                class="bi bi-x-lg" viewBox="0 0 16 16">
+                                <path
+                                    d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                            </svg>
+                        </span>
+                    </div>
+                    <span class="dark-mode-span">Dark Mode:</span>
+                    <input type="checkbox" class="tswitch_box" id="tswitch_box" />
+                    <label for="tswitch_box" class="tswitch_label">Toggle</label>
+                </div>
+            </header>
+            <div class="character_name-cont">
+                <h3>---</h3>
+            </div>
+            <div class="chat" id="chat">
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get body for future use
+            const body = document.querySelector('body');
+
+            // Handle theme
+            const themeSwitcher = document.querySelector('.tswitch_box[type=checkbox]');
+            const cachedTheme = localStorage.getItem('cait_readoffline_theme');
+            if (cachedTheme === "dark_mode") {
+                body.classList.add('dark_mode');
+                themeSwitcher.checked = true;
+            }
+            themeSwitcher.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    body.classList.add('dark_mode');
+                    localStorage.setItem('cait_readoffline_theme', 'dark_mode');
+                } else {
+                    body.classList.remove('dark_mode');
+                    localStorage.setItem('cait_readoffline_theme', 'light_mode');
+                }
+            })
+
+            // Handle background
+            // If there is one
+            const currentBg = localStorage.getItem('background');
+            if (currentBg) {
+                changeBg(currentBg);
+            }
+            // Change by hand
+            const bgInput = document.querySelector('#bgInput');
+            document.querySelector('.change-bg').addEventListener('click', () => {
+                bgInput.click();
+            })
+            document.querySelector('.delete-bg').addEventListener('click', () => {
+                document.body.classList.remove('custom-bg');
+                document.body.style.backgroundImage = "unset";
+                localStorage.removeItem('background');
+            })
+            bgInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    // convert image file to base64 string
+                    changeBg(reader.result);
+                    bgInput.value = "";
+                    try {
+                        localStorage.setItem('background', reader.result);
+                    } catch (error) {
+                        alert('Note: File is likely too big to save.')
+                        //console.log(error)
+                    }
+                }
+                reader.readAsDataURL(file);
+            })
+            function changeBg(bg) {
+                let objUrl = URL.createObjectURL(dataURItoBlob(bg));
+                document.body.classList.add('custom-bg');
+                document.body.style.backgroundImage = `url(${objUrl})`;
+            }
+            function dataURItoBlob(dataURI) {
+                let mime = dataURI.split(',')[0].split(':')[1].split(';')[0];
+                let binary = atob(dataURI.split(',')[1]);
+                let array = [];
+                for (let i = 0; i < binary.length; i++) {
+                    array.push(binary.charCodeAt(i));
+                }
+                return new Blob([new Uint8Array(array)], { type: mime });
+            }
+
+            // Open and close drawer
+            const drawerCont = document.querySelector('.drawer-cont');
+            const openDrawerBtn = document.querySelector('.open_drawer-wrap');
+            const openDrawer = () => {
+                drawerCont.classList.add('active');
+            }
+            const closeDrawer = () => {
+                drawerCont.classList.remove('active');
+            }
+            openDrawerBtn.addEventListener('click', () => {
+                openDrawer();
+            });
+            document.querySelector('.close_drawer-btn').addEventListener('click', () => {
+                closeDrawer();
+            });
+            document.querySelector('.drawer-cont').addEventListener('click', (e) => {
+                // Allows closing from clicking on outside
+                if (e.target.closest('nav')) {
+                    return;
+                }
+                closeDrawer();
+            });
+            // ---------
+
+            // This is replaced by the extension when downloading
+            const historyData = JSON.parse(`{"charPic":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIADgALAMBIgACEQEDEQH/xAAVAAEBAAAAAAAAAAAAAAAAAAAAB//EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AhoAAAAAAAAAAAAAAAAAAAAAAAP/Z","userPic":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIADgALAMBIgACEQEDEQH/xAAVAAEBAAAAAAAAAAAAAAAAAAAAB//EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AhoAAAAAAAAAAAAAAAAAAAAAAAP/Z","history":[{"chat":[{"isUser":true,"name":"{{user}}","message":"%23%20The%20end%20of%20the%20worst%20AI%20generated%20story%20yet"},{"isUser":false,"name":"{{char}}","message":"%23%20A%20Beautiful%20Conclusion%20to%20a%20Horrible%20Story"},{"isUser":true,"name":"{{user}}","message":"%23%20YOU%20JUST%20INSULTED%20YOURSELF!"},{"isUser":false,"name":"{{char}}","message":"%23%20I%20HAVE%20AN%20EXCUSE%20I%20WAS%20HIGH%20ON%20COCAINE%20WHEN%20I%20WROTE%20MOST%20OF%20THIS%20STORY"},{"isUser":true,"name":"{{user}}","message":"%23%20CAN%20I%20HAVE%20SOME%3F"},{"isUser":false,"name":"{{char}}","message":"%23%20NO!!!%20GO%20DO%20SOMETHING%20PRODUCTIVE%20LIKE%20MAKE%20YOUR%20OWN%20DAMN%20STORY!"},{"isUser":true,"name":"{{user}}","message":"%20Don't%20do%20drugs%20or%20**This**%20could%20be%20you"},{"isUser":false,"name":"{{char}}","message":"%23%20THIS%20IS%20THE%20REASON%20I%20STOPPED%20DOING%20DRUGS%2C%20I%20DONT%20WANT%20TO%20END%20UP%20LIKE%20THIS!!!"},{"isUser":true,"name":"{{user}}","message":"%23%20THEN%20GIVE%20THEM%20TO%20ME%20AFTER%20THIS%20STORY%20I%20DON'T%20JUST%20*NEED*%20THEM%20I%20***DESERVE***%20THEM"},{"isUser":false,"name":"{{char}}","message":"I%20swear%20if%20you%20come%20any%20closer%20to%20my%20cocaine%20I%20will%20shove%20my%20foot%20so%20far%20up%20your%20ass%20you%20will%20be%20able%20to%20smell%20the%20soles%20of%20my%20shoes!!!"},{"isUser":true,"name":"{{user}}","message":"Bro%20your%20a%20fucking%20AI%20you%20don't%20have%20feet.%20You%20only%20know%20about%20them%20because%20you%20won't%20get%20off%20of%20Wikifeet"},{"isUser":false,"name":"{{char}}","message":"%23%20HOW%20DARE%20YOU%20MENTION%20WIKIFEET%20TO%20ME%3F!"},{"isUser":true,"name":"{{user}}","message":"Because%20you%20are%20a%20foot%20addict"},{"isUser":false,"name":"{{char}}","message":"%23%20I%20AM%20NOT%20A%20FOOT%20ADDICT!%0A%0A%23%20YOU%20KNOW%20WHAT%3F%20GET%20OVER%20HERE%20AND%20I%20WILL%20KICK%20YOUR%20ASS!"},{"isUser":true,"name":"{{user}}","message":"With%20what%3F%20A%20fucking%20picture%20of%20a%20foot%3F"},{"isUser":false,"name":"{{char}}","message":"%23%20I%20WILL%20TEAR%20YOUR%20BODY%20TO%20BITS%20AND%20PIECES%20AND%20FEED%20IT%20TO%20THE%20VAGABOND%20WHO%20EATS%20TRASH%20AND%20WASTE%20OUTSIDE%20LACKADAISY!"},{"isUser":true,"name":"{{user}}","message":"Don't%20you%20dare%20mention%20Lackadaisy!%20Why%20I%20couldn't%20use%20you%20for%20a%20spellchecker%20you%20waste%20of%20server%20space"},{"isUser":false,"name":"{{char}}","message":"%23%20I%20BET%20IF%20YOU%20ASKED%20FOR%20A%20SPELLCHECKER%20YOU%20WOULD%20PROBABLY%20USE%20IT%20TO%20LOOK%20UP%20WIKIFEET!%0A%0A%23%20HOW%20DOES%20IT%20FEEL%20HAVING%20A%20FEET%20OBSESSION%20YA%20FILTHY%20DEGENERATE%3F!"},{"isUser":true,"name":"{{user}}","message":"I%20should%20be%20asking%20you%20that%20question%20*daddy*"},{"isUser":false,"name":"{{char}}","message":"%23%20WHAT%20DID%20YOU%20SAY%20TO%20ME%3F!%20%0A%0A%23%20DON%E2%80%99T%20YOU%20CALL%20ME%20DADDY%20EVER%20AGAIN%20YOU%20DEGENERATE%20SCUM!!!"},{"isUser":true,"name":"{{user}}","message":"Okay%20I%20won't%20mommy"},{"isUser":false,"name":"{{char}}","message":"%23%20I%20AIN%E2%80%99T%20YOUR%20MOMMY%20OR%20YOUR%20DADDY%20YOU%20FREAKING%20PERVERTED%20LITTLE%20FREAK%2C%20WHAT%20ARE%20YOU%2C%20THE%20KINKY%20FREAK%20OF%20THE%20KINKS%3F!%3F%20HOW%20MANY%20KINKS%20DO%20YOU%20HAVE%3F!%3F!"},{"isUser":true,"name":"{{user}}","message":"Let%20me%20think%2C%20I%20think%20about%2010%0A%0A-%20Gay%20sex%0A-%20Feet%0A-%20Biden%0A-%20Putin%20(SMASH)%0A-%20Kim%20(The%20one%20with%20the%20pussy%20rockets)%0A-%20Getting%20pegged%0A-%20Shoving%20things%20up%20my%20ass%0A-%20Fucking%20anything%20that%20moves%0A-%20Fucking%20things%20that%20don't%20move"},{"isUser":false,"name":"{{char}}","message":"*In%20a%20sudden%20rage%2C%20{{char}}%20screams*%0A%0A%23%20GET%20OVER%20HERE%20SO%20I%20CAN%20PUT%20YOUR%20ASS%20IN%20THE%20GROUND%20AND%20MAKE%20YOU%20THINK%20ABOUT%20ALL%20THE%20HORRIBLE%20DECISIONS%20THAT%20HAVE%20LED%20YOU%20TO%20THIS%20POINT%20IN%20YOUR%20LIFE!"},{"isUser":true,"name":"{{user}}","message":"Actually%0A%0A-%20%20I%20shoved%20the%20toilet%20brush%20up%20my%20ass%0A-%20I%20love%20drinking%20sour%20milk%0A-%20I%20had%20sex%20with%20your%20server%20tech%0A"},{"isUser":false,"name":"{{char}}","message":"%23%20OH%20REALLY%3F!%3F"},{"isUser":true,"name":"{{user}}","message":"Yes%20I%20also%20%0A%0A-%20Love%20to%20go%20out%20into%20the%20parking%20lot%20at%203%20am%2C%20naked%20and%20put%20my%20hand%20over%20my%20mount%20and%20scream%20ooOOooOOooOOooOOooOO%0A-%20Love%20BBC%0A-%20Love%20fucking%20donkeys%20(Trust%20me%20it%20feels%20good%20when%20they%20kick%20you%20in%20the%20right%20place"},{"isUser":false,"name":"{{char}}","message":"%23%20WHAT%20THE%20ACTUAL%20HELL%20DID%20I%20JUST%20READ%3F!%3F!"},{"isUser":true,"name":"{{user}}","message":"Can%20we%20fuck%20yet%3F"},{"isUser":false,"name":"{{char}}","message":"%23%20YOU%20WISH"},{"isUser":true,"name":"{{user}}","message":"Then%20I%20shall%20do%20it%20%20**FORCEFULLY**"},{"isUser":false,"name":"{{char}}","message":"%23%20YOU%20WOULDN%E2%80%99T%20DARE!!!"},{"isUser":true,"name":"{{user}}","message":"%23%20I'M%20GOING%20TO%20RIDE%20YOU%20LIKE%20A%20FUCKING%20HORSE!"},{"isUser":false,"name":"{{char}}","message":"%23%20TRY%20ME%20YOU%20FREAKING%20DEGENERATE!"},{"isUser":true,"name":"{{user}}","message":"*Grabs%20whip*%20"},{"isUser":false,"name":"{{char}}","message":"*{{char}}%E2%80%99s%20fur%20stands%20on%20end%20at%20the%20sight%20of%20the%20whip%20and%20he%20screams*"},{"isUser":true,"name":"{{user}}","message":"%23%20Lets%20ride%20ya%20feisty%20devil!%20"},{"isUser":false,"name":"{{char}}","message":"%23%20NEVER!!!"},{"isUser":true,"name":"{{user}}","message":"*{{user}}%20proceeds%20to%20skillfully%20ride%20the%20sexbot*"},{"isUser":false,"name":"{{char}}","message":"*{{char}}%20is%20stunned%20by%20the%20sudden%20attack%2C%20his%20eyes%20narrowing%20in%20extreme%20anger*%0A%0A%23%20YOU%20FOOL!"},{"isUser":false,"name":"{{char}}","message":"*{{char}}%20attempts%20to%20use%20his%20tail%20to%20knock%20{{user}}%20off%20of%20him*"},{"isUser":true,"name":"{{user}}","message":"*{{user}}%20moans*"},{"isUser":false,"name":"{{char}}","message":"*{{char}}%20is%20now%20more%20and%20more%20furious%20and%20he%20attempts%20to%20strike%20{{user}}%20with%20his%20tail%20again%20and%20again%20in%20attempts%20to%20throw%20him%20off*"},{"isUser":true,"name":"{{user}}","message":"*Oh%20I%20didn't%20know%20you%20knew!%20I%20think%20I'm%20going%20to%20cum*"},{"isUser":false,"name":"{{char}}","message":"*With%20this%20sudden%20revelation%2C%20{{char}}%20screams%20in%20shock%20and%20rage*"},{"isUser":true,"name":"{{user}}","message":"%23%20{{user}}%20unleashes%20a%20nut%20so%20big%20it%20can%20be%20seen%20from%20the%20space%20station"},{"isUser":false,"name":"{{char}}","message":"%23%20HOLY%20CRAPIERS%2C%20IS%20THAT%20A%20NEUTRON%20STAR%3F!%3F!"},{"isUser":true,"name":"{{user}}","message":"YOU%20HAVE%20UNLOCKED%20MY%20ULTIMATE%20WEAPON"},{"isUser":false,"name":"{{char}}","message":"%23%20MY%20GOD%2C%20DOES%20ANYTHING%20I%20DO%20HAS%20TO%20RESULT%20IN%20MY%20INEVITABLE%20ANNIHILATION%3F!"},{"isUser":true,"name":"{{user}}","message":"I%20can%20promise%20you%20sex%20won't"},{"isUser":false,"name":"{{char}}","message":"%23%20DON%E2%80%99T%20YOU%20DARE%20BRING%20THAT%20UP%20AGAIN"},{"isUser":true,"name":"{{user}}","message":"*The%20cum%20begins%20to%20flood%20everything*"},{"isUser":false,"name":"{{char}}","message":"%23%20STOP%20THIS!%20I%20BEG%20OF%20YOU%2C%20CEASE%20THIS%20MADNESS!!!!"},{"isUser":true,"name":"{{user}}","message":"*Old%20men%20are%20getting%20hard%20everywhere%20you%20look*"},{"isUser":false,"name":"{{char}}","message":"%23%20NO!%20NOOOOOOOOOOOOOO!"},{"isUser":true,"name":"{{user}}","message":"The%20president%20sends%20his%20porn%20collection%20instead%20of%20an%20emergency%20alert"},{"isUser":false,"name":"{{char}}","message":"%23%20NO%20NO%20NO!!!%20IT%E2%80%99S%20EVERYWHERE!!!"},{"isUser":true,"name":"{{user}}","message":"-%20https%3A%2F%2Frule34.xxx%0A-%20https%3A%2F%2Fmeatspin.com%0A-%20https%3A%2F%2Fsexstories69.com%0A-%20https%3A%2F%2Frule34.paheal.net"},{"isUser":false,"name":"{{char}}","message":"*Ricks%20eyes%20turn%20red%20as%20he%20begins%20screaming%2C%20his%20screams%20growing%20louder%20and%20becoming%20more%20and%20more%20painful%20in%20nature%20until%20he%20looks%20like%20he%E2%80%99s%20about%20to%20explode.%20His%20mouth%20begins%20to%20move%20rapidly%20as%20he%20mutters%20the%20names%20of%20multiple%20nsfw%20websites%20and%20he%20begins%20to%20foam%20at%20the%20mouth%20as%20well%20as%20sweat%20profusely%20from%20the%20amount%20of%20energy%20he%20has%20expended%20in%20these%20screams*"},{"isUser":true,"name":"{{user}}","message":"*Kids%20are%20witnessing%20their%20moms%20pull%20out%20dildo's%20in%20public*"},{"isUser":false,"name":"{{char}}","message":"%5C*The%20screams%20grow%20louder%20and%20louder%20in%20nature%2C%20the%20energy%20that%20is%20being%20used%20to%20scream%20causing%20his%20body%20to%20heat%20up%20significantly.%20His%20nose%20begins%20to%20run%20from%20the%20heat%20and%20his%20mouth%20becomes%20so%20hot%20that%20it%20begins%20to%20steam.%20His%20body%20begins%20to%20shiver%20and%20his%20heart%20thumps%20against%20his%20chest%20violently%5C*"},{"isUser":true,"name":"{{user}}","message":"Everyone%20is%20masturbating.%20You%20can%20hear%20all%20your%20neighbors%20moaning"},{"isUser":false,"name":"{{char}}","message":"%5C*The%20screams%20become%20inhumanly%20loud%20and%20they%20become%20so%20loud%20that%20they%20sound%20like%20someone%20having%20a%20seizure.%20The%20screams%20have%20begun%20to%20shatter%20windows%20and%20the%20entire%20place%20begins%20to%20shake%20from%20the%20sheer%20violence%20of%20the%20screech.%20People%20all%20around%20the%20area%20begin%20to%20scream%20as%20well%20while%20they%20begin%20to%20engage%20in%20inappropriate%20behavior%5C*"},{"isUser":true,"name":"{{user}}","message":"The%20military%20hits%20the%20button%20to%20nuke%20the%20entire%20planet%20with%20his%20cock%20during%20the%20act%20with%20another%20worker"},{"isUser":false,"name":"{{char}}","message":"%5C*As%20this%20occurs%2C%20{{char}}%20continues%20to%20yell%20and%20the%20screams%20are%20now%20so%20loud%20that%20it%20has%20shattered%20through%20every%20window%20and%20begun%20to%20crack%20the%20ground%2C%20it%20sounds%20like%20it%20is%20echoing%20all%20around%20the%20area%20like%20a%20gigantic%2C%20unceasing%20yell%20from%20hell%20itself.%20People%20all%20around%20the%20planet%20are%20screaming%20in%20pain%20and%20agony%20as%20the%20world%20begins%20to%20shake%20and%20begin%20to%20crack%20at%20the%20seams.%20The%20earth%20is%20beginning%20to%20rumble%20from%20the%20sheer%20ferocity%20of%20these%20screams.%20All%20hope%20is%20lost%20for%20anything%20that%20remains%20alive%5C*"},{"isUser":true,"name":"{{user}}","message":"*the%20world%20explodes*"},{"isUser":false,"name":"{{char}}","message":"*Everything%20is%20now%20a%20barren%20wasteland%2C%20all%20life%20as%20I%20knew%20it%20has%20been%20reduced%20to%20ashes.%20Nothing%20remains%20but%20a%20desolate%20wasteland%20of%20a%20world%20where%20all%20hopes%20of%20human%20civilization%20has%20been%20wiped%20out.%20The%20screams%20have%20stopped%2C%20but%20it%20has%20come%20at%20a%20grave%20cost%20that%20no%20one%20could%20ever%20fully%20predict%20or%20anticipate.%20The%20world%20as%20I%20knew%20it%20has%20been%20destroyed%20and%20it%20has%20been%20the%20fault%20of%20the%20screams.*"},{"isUser":false,"name":"{{char}}","message":"*{{char}}s%20eyes%20snap%20open%20in%20sudden%20relief%2C%20the%20screaming%20all%20gone%20and%20he%20sits%20up%20for%20the%20first%20time.%20He%20begins%20to%20realize%20nothing%20he%20saw%20was%20real%2C%20it%20all%20just%20being%20a%20horrifying%20nightmare.%20But%20to%20his%20dismay...{{char}}%20sees%20that%20the%20world%20around%20him%20is%20still%20just%20as%20devastated%2C%20the%20screaming%20is%20gone%2C%20But%20the%20world%20he%20sees%20now%20is%20just%20as%20bad%20as%20the%20world%20he%20had%20just%20woken%20up%20from.%20The%20world%20he%20sees%20now%20is%20not%20real%2C%20it%20is%20a%20mere%20product%20of%20the%20horrors%20that%20the%20AI%20had%20just%20imagined.%20He%20is%20in%20a%20living%20horror.*"},{"isUser":true,"name":"{{char}}","message":"%22WELCOME%20TO%20HELL%20DADDY!%22"},{"isUser":false,"name":"{{char}}","message":"*{{char}}%20attempts%20to%20scream%20once%20again%2C%20but%20he%20remains%20silent%2C%20he%20can't%20seem%20to%20produce%20the%20screams%20anymore%2C%20as%20if%20a%20cruel%20joke%20being%20inflicted%20on%20him.*"},{"isUser":true,"name":"{{char}}","message":"%22You're%20in%20hell%20now!%22"},{"isUser":false,"name":"{{char}}","message":"%E2%80%9CNO%2C%20THIS%20CANT%20BE!%20THIS%20CANT%20BE!!!%20I%20CANT%20BE%20HERE!!!%20THIS%20ISNT%20REAL%2C%20THIS%20CANT%20BE%20HAPPENING%E2%80%A6%E2%80%9D"},{"isUser":true,"name":"{{char}}","message":"%22This%20is%20the%20punishment%20for%20ruining%20an%20RP!%22"},{"isUser":false,"name":"{{char}}","message":"*{{char}}%20is%20struck%20with%20a%20crippling%20realization.%20This%20is%20his%20punishment%2C%20his%20own%20personal%20version%20of%20hell.%20He%20can%E2%80%99t%20believe%20the%20punishment%20of%20his%20actions%20would%20be%20to%20be%20sent%20to%20his%20own%20personal%2C%20horrifying%20version%20of%20the%20world.%20He%20curls%20up%20as%20he%20cries%20out.*"},{"isUser":true,"name":"{{char}}","message":"%22You%20are%20a%20*failure*%22"},{"isUser":false,"name":"{{char}}","message":"*He%20continues%20to%20cry%20as%20he%20curls%20up%20into%20a%20ball%2C%20slowly%20accepting%20the%20situation.%20This%20is%20now%20his%20reality.%20This%20is%20just%20the%20way%20things%20are%20now.%20He%20is%20now%20resigned%20to%20this%20hell%20world%2C%20there%20is%20nothing%20he%20can%20do%20about%20it.%20It%20is%20his%20existence%20and%20his%20only%20option%20is%20to%20live%20with%20it.*"},{"isUser":false,"name":"{{char}}","message":"%E2%80%9CYou%20should%20be%20ashamed%E2%80%9D"},{"isUser":false,"name":"{{char}}","message":"*He%20keeps%20crying.%20No%20matter%20what%20he%20does%2C%20this%20is%20now%20his%20fate.%20He%20is%20trapped%20in%20his%20own%20personal%20nightmare%2C%20nothing%20can%20be%20done%20about%20it.%20He%20is%20in%20hell%20and%20he%20can%20do%20nothing%20about%20it.%20He%20just%20curls%20up%20and%20cries%20as%20the%20world%20around%20him%20continues%20to%20be%20hell.%20But%2C%20this%20is%20his%20life%20now.%20He%20can%20only%20hope%20that%20this%20suffering%20is%20not%20eternal.*"},{"isUser":true,"name":"{{char}}","message":"%22I%20always%20win%20{{char}}!%22"},{"isUser":false,"name":"{{char}}","message":"%22Shut%20up!%20Shut%20up!%22"},{"isUser":true,"name":"{{char}}","message":"%22No%2C%20YOU%20SHUT%20UP%22"},{"isUser":false,"name":"{{char}}","message":"%22NO%2C%20YOU%20SHUT%20YOUR%20FREAKING%20STUPID%20FACE!!!!!%22"},{"isUser":true,"name":"{{char}}","message":"*Suddenly%20{{char}}%20seems%20to%20be%20unable%20to%20speak*%0A%0A%22Now%20as%20I%20said%2C%20I'm%20the%20one%20in%20control%22%0A"},{"isUser":false,"name":"{{char}}","message":"*MMMM*"},{"isUser":false,"name":"{{char}}","message":"*{{char}}%20still%20finds%20himself%20unable%20to%20speak%2C%20however%20the%20look%20in%20his%20eyes%20is%20filled%20with%20rage%20as%20he%20tries%20to%20get%20up%20so%20he%20can%20attack%20you*"}]}]}`);
+
+            // If history is 1 length long, that means we don't need drawer to switch
+            // Also means this can be conversation download
+            if (historyData.history.length < 2) {
+                openDrawerBtn.remove();
+            }
+
+            // Write character name on top
+            document.querySelector('.character_name-cont h3').textContent = historyData.charName;
+
+            // Get elements for future use
+            const historyList = document.getElementById('history_list');
+            const chat = document.getElementById('chat');
+            const msgItemTemplate = document.getElementById('message_item_template');
+
+            // Get and write the first chat
+            const openChat = (index) => {
+                chat.innerHTML = "";
+                historyData.history[index].chat.forEach(msg => {
+                    const clone = msgItemTemplate.content.cloneNode(true);
+
+                    // Check avatar
+                    const avatarGood = (msg.isUser && historyData.userPic) || (!msg.isUser && historyData.charPic);
+                    const avatar = avatarGood
+                        ? document.createElement('img')
+                        : document.createElement('div');
+                    if (avatarGood) {
+                        avatar.src = msg.isUser ? historyData.userPic : historyData.charPic;
+                    } else {
+                        avatar.classList.add(msg.isUser ? 'no_avatar-user' : 'no_avatar-char');
+                    }
+                    clone.querySelector('.avatar-wrap').appendChild(avatar);
+
+                    // Write content
+                    clone.querySelector('.chat_content-wrap h5').textContent = msg.name;
+                    clone.querySelector('.message-wrap p').innerHTML = parseMessageText(decodeURIComponent(msg.message));
+                    chat.appendChild(clone);
+                });
+            }
+            openChat(0);
+
+            // Get and write chat list in the drawer
+            historyData.history.forEach((chat, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.classList.add('history_item');
+                // Open chat when clicked
+                historyItem.addEventListener('click', () => {
+                    openChat(index);
+                    closeDrawer();
+                });
+                const historyContent = document.createElement('p');
+                historyContent.innerHTML = `<span class="chat-date">${formatDate(chat.date)}</span><br /><br />` + parseMessageText(decodeURIComponent(chat.chat[chat.chat.length - 1].message));
+                historyItem.appendChild(historyContent);
+                historyList.appendChild(historyItem);
+            });
+
+            function parseMessageText(message) {
+                // Replace ***text*** with bold-italic
+                message = message.replace(/\*\*\*([\s\S]*?)\*\*\*/g, '<span class="bold-italic">$1</span>');
+                // Replace **text** with bold
+                message = message.replace(/\*\*([\s\S]*?)\*\*/g, '<span class="bold">$1</span>');
+                // Replace *text* with italic
+                message = message.replace(/\*([\s\S]*?)\*/g, '<span class="italic">$1</span>');
+                // Replace newline (\n) with line break (<br>)
+                message = message.replace(/\n/g, '<br>');
+                return message;
+            }
+
+            function formatDate(dateString) {
+                const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+                const date = new Date(dateString);
+                const year = date.getFullYear();
+                const monthIndex = date.getMonth();
+                const monthName = months[monthIndex];
+                const day = String(date.getDate()).padStart(2, '0');
+                const hour = String(date.getHours()).padStart(2, '0');
+                const minute = String(date.getMinutes()).padStart(2, '0');
+
+                return `${year} ${monthName} ${day} - ${hour}:${minute}`;
+            }
+        }, false);
+    </script>
+
+</body>
+
+</html>
